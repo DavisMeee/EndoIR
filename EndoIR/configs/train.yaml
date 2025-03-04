@@ -1,0 +1,130 @@
+name: training
+model_type: EndoIR
+num_gpu: 1
+manual_seed: 42
+
+datasets:
+  train:
+    name: train
+    type: StrongC_Dataset
+    gt_root: ~ 
+    input_root: ~ 
+    tasks: ['blood','low_brightness','smoke']
+    input_mode: ~
+    use_flip: true
+    use_shuffle: true
+    num_worker_per_gpu: 8
+    batch_size_per_gpu: 8
+    dataset_enlarge_ratio: 1
+    prefetch_mode: ~
+
+  val:
+    name: validation
+    type: StrongC_Dataset
+    gt_root: ~ 
+    input_root: ~ 
+    tasks: ['blood','low_brightness','smoke']
+    input_mode: pad
+    divide: 32
+
+network_unet:
+  type: DualUNet   
+  in_channel: 3
+  out_channel: 3
+  inner_channel: 64
+  norm_groups: 32
+  ffn_factor: 2.66
+  channel_mults: [1,2,4] 
+  attn_res: [0]
+  num_heads: [4,8,8]
+  res_blocks: 2
+  dropout: 0.2
+  divide: 16
+
+
+network_global_corrector:
+  type:  SpatialControlModule
+  normal01: true
+
+network_ddpm:
+  type: DualGaussianDiffusion
+  image_size: 256
+  channels: 3
+  conditional: true
+  color_limit: -1
+  pyramid_list: [1, 2, 2, 2]
+        
+        
+ddpm_schedule:
+  schedule: "linear"
+  n_timestep: 2000
+  linear_start: !!float 1e-6
+  linear_end: !!float 1e-2
+
+path:
+  pretrain_network_g: ~
+  param_key_g: params
+  strict_load_g: True
+  pretrain_network_d: ~
+  resume_state: ~
+  ignore_resume_networks: ['network_identity']
+
+train:
+  cs_on_shift: true
+  vis_train: true
+  vis_num: 150
+  train_type: ddpm_cs_pyramid
+  t_border: 1000
+  input_mode: crop
+  crop_size: [257,257] 
+  optim_g:
+    type: Adam
+    lr: !!float 2e-4
+
+  scheduler:
+    type: MultiStepLR
+    milestones: [50000, 75000] 
+    gamma: 0.3 
+
+
+  total_iter: 100000
+  warmup_iter: -1  
+
+val:
+  split_log: true
+  fix_seed: true
+  color_gamma: 1.0
+  use_up_v2: true
+  pyramid_list: [1, 2, 2, 2]
+  ddim_eta: !!float 1.0
+  ddim_timesteps: 4
+  use_kind_align: False
+  cal_all: true
+  show_all: true
+  val_freq: !!float 5000
+  save_img: true
+  only_save_sr: False
+  metrics:
+    psnr: 
+      type: calculate_psnr
+      crop_border: 0
+      test_y_channel: false
+    ssim:
+      type: calculate_ssim_lol
+    lpips:
+      type: calculate_lpips_lol
+
+logger:
+  print_freq: 100
+  save_checkpoint_freq: !!float 5000
+  use_tb_logger: true
+  wandb:
+    project: ~
+    resume_id: ~
+
+
+dist_params:
+  backend: nccl
+  port: 29500
+
+find_unused_parameters: True
