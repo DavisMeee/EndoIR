@@ -1,0 +1,14 @@
+Please put your dataset in here:
+Please set for LoL dataset Format if using your dataset
+LoL Dataset Format:
+-StrongCdataset/
+   --train/
+      blood/
+      low_brightness/
+      smoke/
+      regular/
+   --test/
+      blood/
+      low_brightness/
+      smoke/
+      regular/
