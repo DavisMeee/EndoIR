@@ -3,7 +3,7 @@
   
 <h1> All-in-One Endoscopic Image Restoration via Task Adaptive Dual-Stream Diffusion Model </h1>
 
-<h3> <b>MICCAI 2025 Submission #99</h3>
+<h3> <b>AAAI 2026</h3>
 
 </samp>
 
