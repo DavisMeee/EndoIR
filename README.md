@@ -1,7 +1,7 @@
 <div align="center">
 <samp>
   
-<h1> All-in-One Endoscopic Image Restoration via Task Adaptive Dual-Stream Diffusion Model </h1>
+<h1> EndoIR: Degradation-Agnostic All-in-One Endoscopic Image Restoration via Noise-Aware Routing Diffusion </h1>
 
 <h3> <b>AAAI 2026</h3>
 
