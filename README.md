@@ -31,3 +31,8 @@ python endoir/train.py -opt configs/test.yaml
 ```
 python endoir/train.py -opt configs/train.yaml
 ```
+
+## Thanks
+```
+This repository is built on BasicSR, thanks to their open-source contributions.
+```
