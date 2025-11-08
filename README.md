@@ -28,11 +28,11 @@ BASICSR_EXT=True sudo $(which python) setup.py develop
 python endoir/train.py -opt configs/test.yaml
 ```
 ## Train
-
+```
 python endoir/train.py -opt configs/train.yaml
-
+```
 
 ## Thanks
-```
+
 This repository is built on BasicSR, thanks to their open-source contributions.
-```
+
