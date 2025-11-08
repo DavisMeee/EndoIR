@@ -28,9 +28,9 @@ BASICSR_EXT=True sudo $(which python) setup.py develop
 python endoir/train.py -opt configs/test.yaml
 ```
 ## Train
-```
+
 python endoir/train.py -opt configs/train.yaml
-```
+
 
 ## Thanks
 ```
