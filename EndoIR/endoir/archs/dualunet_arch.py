@@ -337,7 +337,7 @@ class DualStreamResnetBlocWithAttn(nn.Module):
         return x, y
 
 
-class SingleResnetBlocWithAttn(nn.Module):
+class RoutingBlockWithAttn(nn.Module):
     def __init__(self, dim, dim_out, *, noise_level_emb_dim=None, norm_groups=4, dropout=0, ffn_factor=2.66,\
         with_attn=False, use_affine_level=False, attn_type=None, topk_ratio=None):
         super().__init__()
@@ -359,9 +359,7 @@ class SingleResnetBlocWithAttn(nn.Module):
 
 
     def forward(self, x, time_emb):
-        
-        # x = self.res_block(x, time_emb)
-        x = self.decoding(x)  # B,C,H,W
+        x = self.decoding(x) 
         B,C,H,W = x.shape
         if self.use_topk:
             select_dims = self.routing(x)[:,:,None,None].expand(-1,-1, H, W)  # [B,top_k]
@@ -370,8 +368,8 @@ class SingleResnetBlocWithAttn(nn.Module):
             selected_x = x
         selected_x = self.res_block(selected_x, time_emb)
         if self.use_topk:
-            output = torch.zeros_like(x)  # B,H,W,C
-            output = output.scatter(dim=1, index=select_dims, src=output)
+            output = torch.zeros_like(x)  
+            output = output.scatter(dim=1, index=select_dims, src=selected_x)
         x = x + output
         h = self.noise_func(x, time_emb)
         output = self.ffn(self.norm(h)) + x
@@ -622,7 +620,7 @@ class DualUNet(nn.Module):
             channel_mult = inner_channel * channel_mults[ind]
             for _ in range(0, res_blocks+1):
                 ups.append(
-                    SingleResnetBlocWithAttn(  
+                    RoutingBlockWithAttn(  
                     pre_channel+2*(feat_channels.pop()), channel_mult, noise_level_emb_dim=noise_level_channel, norm_groups=norm_groups,ffn_factor=ffn_factor,
                         dropout=dropout, with_attn=use_attn, use_affine_level=use_affine_level, attn_type=attn_type, topk_ratio=ratio_list[ind])
                     )
@@ -678,7 +676,7 @@ class DualUNet(nn.Module):
                 x = layer(x)
         
         for layer in self.ups:
-            if isinstance(layer, SingleResnetBlocWithAttn):
+            if isinstance(layer, RoutingBlockWithAttn):
                 t = t + prompt 
                 x = torch.cat((x, feats_x.pop(), feats_y.pop()), dim=1)
                 x = layer(x, t) 
